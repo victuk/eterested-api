@@ -1,0 +1,6 @@
+node_modules
+*.http
+*.rest
+.env
+# frontend_test
+testAndSeeding

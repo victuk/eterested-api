@@ -1,0 +1,3 @@
+Return buyer's default amount from 600,000 to 0
+
+

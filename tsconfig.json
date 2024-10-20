@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "CommonJS",
+    // "moduleResolution": "NodeNext",
+    "rootDir": "./",
+    "outDir": "./build",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "strict": true
+  }
+}
