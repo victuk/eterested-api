@@ -235,7 +235,7 @@ userRoutes.post("/create-event", async (req: CustomRequest, res: CustomResponse,
             tags,
             cityOrLGA,
             state,
-            eventOrganizer: req.userDetails?.userId
+            eventOrganizer: req.userDetails?.userId,
         });
 
         if(ticketTypesForEvent.length == 0) {
@@ -320,7 +320,7 @@ userRoutes.post("/attend-event", async (req: CustomRequest, res: CustomResponse,
                     eventId,
                     paymentReference: uIdReference,
                     buyerId: req.userDetails?.userId,
-                    boughtFor: buyingFor.email[i],
+                    boughtFor: buyingFor.emails[i],
                     ticketStatus: tic?.cost == 0 ? "paid" : "pending-payment"
                 });
                 totalTickets++;
@@ -346,14 +346,43 @@ userRoutes.post("/attend-event", async (req: CustomRequest, res: CustomResponse,
             });
             return;
         }
+
+        const pendingTickets = eventTickets.map(t => t.boughtFor);
+
+        if(pendingTickets.length == 0) {
+            res.status(400).send({
+                message: "No recepient specified"
+            });
+            return;
+        }
+
+        const duplicateTickets = await eventTicketsBoughtCollection.find({
+            buyerId: req.userDetails?.userId,
+            eventId,
+            boughtFor: {"$in": pendingTickets}
+        });
+
+        await eventTicketTypeCollection.findByIdAndUpdate(buyingFor.ticketTypeId, {
+            "$inc": {totalTicketsBought: totalTickets}
+        });
+
+        console.log("buyingFor.emails", pendingTickets);
+        console.log("duplicateTickets", duplicateTickets);
+
+        if(duplicateTickets.length > 0) {
+            res.status(400).send({
+                message: `Duplicate tickets detected with email(s) ${duplicateTickets?.map(d => d?.boughtFor).join(", ")}`
+            });
+            return;
+        }
         
         console.log("eventTickets", eventTickets);
 
         let ticketRegistrationDetails = await eventTicketsBoughtCollection.create(eventTickets);
 
-        const newTickets: any = await eventTicketsBoughtCollection.find({eventId, buyerId: req.userDetails?.userId, ticketStatus: "pending-payment"});
+        // const newTickets: any = await eventTicketsBoughtCollection.find({eventId, buyerId: req.userDetails?.userId, ticketStatus: "pending-payment"});
 
-        let paymentDetails: any;
+        let paymentDetails: any = null;
 
 
         if(totalAmountToPay > 0) {
@@ -366,19 +395,21 @@ userRoutes.post("/attend-event", async (req: CustomRequest, res: CustomResponse,
                     Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
                 }
             });
+
+            if(paymentDetails.status != 200) {
+                res.status(400).send({
+                    message: "An error occurred while trying to initialize transaction."
+                });
+                return;
+            }
+
         }
 
-        if(paymentDetails.status != 200) {
-            res.status(400).send({
-                message: "An error occurred while trying to initialize transaction."
-            });
-            return;
-        }
 
         res.send({
             ticketRegistrationDetails,
-            newTickets,
-            paymentDetails: paymentDetails.data
+            newTickets: ticketRegistrationDetails,
+            paymentDetails: paymentDetails ? paymentDetails.data : null
         });
 
 

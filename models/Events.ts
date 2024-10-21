@@ -49,7 +49,7 @@ const eventSchema = new Schema({
     averageRatingByTicketType: {
         type: Array,
         default: []
-    }
+    },
 }, {timestamps: true});
 
 type eventCollectionType = InferSchemaType<typeof eventSchema>;

@@ -15,6 +15,8 @@ paystackRouter.post("/webhook", async (req: CustomRequest, res: CustomResponse, 
         // Retrieve the request's body
         const event = req.body;
         console.log("Event", event);
+
+        
         // Do something with event  
         }
         res.send(200);

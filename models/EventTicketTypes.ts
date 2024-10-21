@@ -18,6 +18,14 @@ const eventTicketTypeSchema = new Schema({
     cost: {
         type: Number,
         default: 0
+    },
+    totalTicketsAvailable: {
+        type: Number,
+        default: 1000
+    },
+    totalTicketsBought: {
+        type: Number,
+        default: 0
     }
 }, {timestamps: true});
 
