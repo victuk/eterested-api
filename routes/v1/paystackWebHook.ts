@@ -7,6 +7,9 @@ import {
 import crypto from "crypto";
 import { eventTicketsBoughtCollection } from "../../models/EventTicketsBought";
 import { eventTicketTypeCollection } from "../../models/EventTicketTypes";
+import { sendEmail } from "../../utils/emailUtilities";
+import { userCollection } from "../../models/User";
+import { eventCollection } from "../../models/Events";
 
 const paystackRouter = Router();
 
@@ -48,8 +51,55 @@ paystackRouter.post(
             }
           );
 
+          const userDetails = await userCollection.findById(ticketDetails?.buyerId);
+
+          const eventDetails = await eventCollection.findById(ticketDetails?.eventId);
+
+          const ticketOwners =
+            await eventTicketsBoughtCollection.find({
+              paymentReference: event.data.reference,
+            });
+
+            const usersToReceiveEmail = ticketOwners.map(e => e.boughtFor).filter((e: string) => e != userDetails?.email);
+
+
+
+          await sendEmail({
+            to: userDetails!!.email,
+            subject: "eTerested - Successful ticket purchase",
+            body: `
+                <div>Dear ${userDetails?.firstName} ${userDetails?.lastName}</div>
+                <div>
+                    Your payment for the "${eventDetails?.title}" event is successful.
+                    ${usersToReceiveEmail.length > 0 && (`<div>
+                        You have also been able to purchase tickets for${(ticketOwners.map(t => t.boughtFor)).includes(userDetails!!.email) ? " yourself and:" : ":"}
+                    ${usersToReceiveEmail.map((t: string, index: number) => (`<div>${index + 1}. ${t}</div>`))}
+                    </div>`)}
+                </div>
+            `
+          });
+
           res.sendStatus(200);
         } else {
+
+            const ticketDetails = await eventTicketsBoughtCollection.findOne({
+                paymentReference: event.data.reference,
+              });
+
+              const userDetails = await userCollection.findById(ticketDetails?.buyerId);
+
+              const eventDetails = await eventCollection.findById(ticketDetails?.eventId);
+
+              await sendEmail({
+                to: userDetails!!.email,
+                subject: "eTerested - Ticket purchase failed",
+                body: `
+                    <div>Dear ${userDetails?.firstName} ${userDetails?.lastName}</div>
+                    <div>
+                        Your payment for the "${eventDetails?.title}" event failed, kindly try again later.
+                    </div>
+                `
+              });
 
             await eventTicketsBoughtCollection.updateMany({
                 paymentReference: event.data.reference,
