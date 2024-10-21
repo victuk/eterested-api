@@ -359,12 +359,13 @@ userRoutes.post("/attend-event", async (req: CustomRequest, res: CustomResponse,
         const duplicateTickets = await eventTicketsBoughtCollection.find({
             buyerId: req.userDetails?.userId,
             eventId,
-            boughtFor: {"$in": pendingTickets}
+            boughtFor: {"$in": pendingTickets},
+            ticketStatus: "paid"
         });
 
-        await eventTicketTypeCollection.findByIdAndUpdate(buyingFor.ticketTypeId, {
-            "$inc": {totalTicketsBought: totalTickets}
-        });
+        // await eventTicketTypeCollection.findByIdAndUpdate(buyingFor.ticketTypeId, {
+        //     "$inc": {totalTicketsBought: totalTickets}
+        // });
 
         console.log("buyingFor.emails", pendingTickets);
         console.log("duplicateTickets", duplicateTickets);
@@ -383,6 +384,8 @@ userRoutes.post("/attend-event", async (req: CustomRequest, res: CustomResponse,
         // const newTickets: any = await eventTicketsBoughtCollection.find({eventId, buyerId: req.userDetails?.userId, ticketStatus: "pending-payment"});
 
         let paymentDetails: any = null;
+
+        console.log(req.originalUrl);
 
 
         if(totalAmountToPay > 0) {
@@ -431,6 +434,22 @@ userRoutes.get("/profile", async (req: CustomRequest, res: CustomResponse, next:
         next(error);
     }
 });
+
+// userRoutes.get("/verify-transaction/:reference", async (req: CustomRequest, res: CustomResponse, next: NextFunction) => {
+//     try {
+
+//         const { reference } = req.params; 
+
+//         const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`);
+
+//         console.log(response.data);
+
+//         res.send("Good");
+
+//     } catch (error) {
+//         next(error);
+//     }
+// });
 
 // Location, bathroom, bedroom - rentals
 // Location, check-in date check-out date, number of guests - shortlet
