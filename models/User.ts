@@ -1,4 +1,5 @@
 import {Schema, InferSchemaType, model, PaginateModel} from "mongoose";
+import paginate from "mongoose-paginate-v2";
 import { v4 } from "uuid";
 
 const userSchema = new Schema({
@@ -73,6 +74,8 @@ const userSchema = new Schema({
 }, {timestamps: true});
 
 type userCollectionType = InferSchemaType<typeof userSchema>;
+
+userSchema.plugin(paginate);
 
 const userCollection = model<userCollectionType, PaginateModel<userCollectionType>>("users", userSchema);
 

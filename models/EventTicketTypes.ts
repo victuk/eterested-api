@@ -1,4 +1,5 @@
 import {Schema, InferSchemaType, model} from "mongoose";
+import paginate from "mongoose-paginate-v2";
 
 const eventTicketTypeSchema = new Schema({
     ticketType: {
@@ -30,6 +31,8 @@ const eventTicketTypeSchema = new Schema({
 }, {timestamps: true});
 
 type eventTicketTypeCollectionType = InferSchemaType<typeof eventTicketTypeSchema>;
+
+eventTicketTypeSchema.plugin(paginate);
 
 const eventTicketTypeCollection = model("eventtickettypes", eventTicketTypeSchema);
 

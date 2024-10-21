@@ -1,4 +1,5 @@
 import {Schema, InferSchemaType, model, PaginateModel} from "mongoose";
+import paginate from "mongoose-paginate-v2";
 
 const eventTicketsBoughtSchema = new Schema({
     ticketTypeId: {
@@ -36,6 +37,8 @@ const eventTicketsBoughtSchema = new Schema({
 }, {timestamps: true});
 
 type eventTicketsBoughtCollectionType = InferSchemaType<typeof eventTicketsBoughtSchema>;
+
+eventTicketsBoughtSchema.plugin(paginate);
 
 const eventTicketsBoughtCollection = model<eventTicketsBoughtCollectionType, PaginateModel<eventTicketsBoughtCollectionType>>("eventTicketsBoughts", eventTicketsBoughtSchema);
 
