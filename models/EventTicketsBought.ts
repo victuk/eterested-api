@@ -21,7 +21,7 @@ const eventTicketsBoughtSchema = new Schema({
     },
     ticketStatus: {
         type: String,
-        enum: ["pending-payment", "paid"],
+        enum: ["pending-payment", "paid", "payment-failed"],
         default: "pending-payment"
     },
     paymentReference: {
