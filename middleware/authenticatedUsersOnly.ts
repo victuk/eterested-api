@@ -14,7 +14,7 @@ interface DecodedObject {
 
 interface PopulatePathAndSelect {
     path: string;
-    select: string;
+    select?: string;
 }
 
 interface PaginationPageAndLimit {

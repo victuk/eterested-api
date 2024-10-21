@@ -513,34 +513,19 @@ userRoutes.get("/my-event/:eventId", async (req: CustomRequest, res: CustomRespo
 userRoutes.get("/my-tickets/:page/:limit", pageAndLimit, async (req: CustomRequest, res: CustomResponse, next: NextFunction) => {
     try {
 
-        const page = req.paginatePageAndLimit!!.limit ? parseInt(req.paginatePageAndLimit!!.limit) : 10;
-
-        const limit = req.paginatePageAndLimit!!.limit ? parseInt(req.paginatePageAndLimit!!.limit) : 0;
+        req.paginatePageAndLimit!!.populate = [
+            {
+                path: "buyerId"
+            }
+        ];
         
-        const offset = (page - 1) * limit;
-
-        const totalDocuments = await eventTicketsBoughtCollection.countDocuments({
-            "$or": [
-                {buyerId: req.userDetails?.userId},
-                {boughtFor: req.userDetails?.email}
-            ]
-        }).distinct("buyerId");
-
-        const totalPages = totalDocuments.length / limit;
-        
-        const myTickets = await eventTicketsBoughtCollection.find({
-            "$or": [
-                {buyerId: req.userDetails?.userId},
-                {boughtFor: req.userDetails?.email}
-            ]
-        }).distinct("buyerId").populate("buyerId").limit(offset);
+        const myTickets = await eventTicketsBoughtCollection.paginate({
+            boughtFor: req.userDetails?.email
+        }, req.paginatePageAndLimit as object);
 
         res.send({
             myTickets,
-            myId: req.userDetails?.userId,
-            totalPages,
-            page,
-            limit
+            myId: req.userDetails?.userId
         });
 
     } catch (error) {
