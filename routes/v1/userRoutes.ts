@@ -363,10 +363,6 @@ userRoutes.post("/attend-event", async (req: CustomRequest, res: CustomResponse,
             ticketStatus: "paid"
         });
 
-        // await eventTicketTypeCollection.findByIdAndUpdate(buyingFor.ticketTypeId, {
-        //     "$inc": {totalTicketsBought: totalTickets}
-        // });
-
         console.log("buyingFor.emails", pendingTickets);
         console.log("duplicateTickets", duplicateTickets);
 
