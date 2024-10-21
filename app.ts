@@ -15,6 +15,7 @@ import { hashPassword, verifyJWT } from "./utils/authUtilities";
 import { DecodedObject } from "./middleware/authenticatedUsersOnly";
 import { userCollection } from "./models/User";
 import { chatCollection } from "./models/Chats";
+import paystackRouter from "./routes/v1/paystackWebHook";
 // import { execSync } from "child_process"
 
 var app: express.Application = express();
@@ -177,6 +178,7 @@ app.use((req, res: any, next) => {
 
 app.use("/v1/auth", authRouter);
 app.use("/v1/user", tenantRouter);
+app.use("/v1/paystack", paystackRouter);
 // app.use("/v1/landlordandagent", agentAndLandlordRouter);
 
 app.get("/", (req, res) => {
