@@ -116,7 +116,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 
     await sendEmail({
       to: newUser.email,
-      subject: "Beta Tenant - Verify email",
+      subject: "e-Terested - Verify email",
       body: `${newUser?.firstName} ${newUser?.lastName}, \n Your otp is ${otp}`
     });
 
@@ -301,7 +301,7 @@ router.post("/forgot-password", async function (req: express.Request, res: expre
 
     await sendEmail({
       to: userInfo.email,
-      subject: "Beta Tenant - Forgot password",
+      subject: "e-Terested - Forgot password",
       body: `${userInfo?.firstName} ${userInfo?.lastName}, \n Your otp is ${otp}`
     });
 
@@ -340,7 +340,7 @@ router.post("/resend-otp", async (req: express.Request, res: express.Response, n
 
     await sendEmail({
       to: userInfo.email,
-      subject: `Beta Tenant - OTP`,
+      subject: `e-Terested - OTP`,
       body: `${userInfo?.firstName} ${userInfo?.lastName},\nYour otp is ${otp}`
     });
 

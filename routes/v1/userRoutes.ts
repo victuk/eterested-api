@@ -308,7 +308,7 @@ userRoutes.post("/attend-event", async (req: CustomRequest, res: CustomResponse,
 
         const uIdReference = v4();
 
-        const tic = await eventTicketTypeCollection.findById(buyingFor.ticketTypeId);
+        const tic = await eventTicketTypeCollection.findById(buyingFor.ticketTypeId, "-totalTicketsAvailable -totalTicketsBought");
 
         let totalTickets = 0;
 
@@ -516,6 +516,9 @@ userRoutes.get("/my-tickets/:page/:limit", pageAndLimit, async (req: CustomReque
         req.paginatePageAndLimit!!.populate = [
             {
                 path: "buyerId"
+            },
+            {
+                path: "eventId"
             }
         ];
         

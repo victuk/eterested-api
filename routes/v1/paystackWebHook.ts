@@ -10,6 +10,7 @@ import { eventTicketTypeCollection } from "../../models/EventTicketTypes";
 import { sendEmail } from "../../utils/emailUtilities";
 import { userCollection } from "../../models/User";
 import { eventCollection } from "../../models/Events";
+import moment from "moment";
 
 const paystackRouter = Router();
 
@@ -62,7 +63,13 @@ paystackRouter.post(
 
             const usersToReceiveEmail = ticketOwners.map(e => e.boughtFor).filter((e: string) => e != userDetails?.email);
 
+            const otherAttendees = await eventTicketsBoughtCollection.find({
+              eventId: ticketDetails?.eventId,
+              buyerId: ticketDetails?.buyerId,
+              boughtFor: {"$ne": userDetails?.email}
+            });
 
+            const otherAttendeesEmail = otherAttendees.map(att => att.boughtFor);
 
           await sendEmail({
             to: userDetails!!.email,
@@ -79,6 +86,30 @@ paystackRouter.post(
             `
           });
 
+          if(otherAttendees.length > 0) {
+            for(let i = 0; i < otherAttendees.length; i++) {
+              await sendEmail({
+                to: otherAttendees[i].boughtFor,
+                subject: "eTerested - Successful ticket purchase",
+                body: `
+                <div>
+                    <div>Dear ${otherAttendeesEmail[i]}</div>
+                    <div>
+                        A ${(otherAttendees[i].ticketTypeId.ticketType).toLocaleUpperCase()} ticket has been bought for you by ${userDetails?.firstName} ${userDetails?.lastName} for ${eventDetails?.title}.
+                        Event Details below:
+                        <div>Date: ${moment(eventDetails?.dateAndTime).format("LLLL")}</div>
+                        <div>Venue: ${eventDetails?.venue}</div>
+                        ${eventDetails?.eventFlyer && (`
+                          <img src="${eventDetails.eventFlyer}" style="height: 400px; width: 100%; background-size: contain;" />
+                          `)}
+                    </div>
+                    <div></div>
+                </div>
+                `
+              });
+            }
+          }
+          
           res.sendStatus(200);
         } else {
 
