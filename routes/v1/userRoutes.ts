@@ -14,6 +14,7 @@ import { sendEmail } from "../../utils/emailUtilities";
 import moment from "moment";
 import { multerUpload, uploadToCloudinary } from "../../utils/cloudinaryUtils";
 import { v4 } from "uuid";
+import { hashPassword } from "../../utils/authUtilities";
 
 const userRoutes = Router();
 
@@ -455,9 +456,17 @@ userRoutes.put("/profile", async (req: CustomRequest, res: CustomResponse, next:
 
         delete req.body.password;
 
-        delete req.body.profilePic;
+        delete req.body.role;
 
-        const updatedDetails = await userCollection.findByIdAndUpdate(req.userDetails?.userId, req.body, {new: true});
+        let updatedDetails;
+
+        if(req.userDetails?.role == "user") {
+            delete req.body.organizationName;
+            updatedDetails = await userCollection.findByIdAndUpdate(req.userDetails?.userId, req.body, {new: true});
+        } else {
+            updatedDetails = await userCollection.findByIdAndUpdate(req.userDetails?.userId, req.body, {new: true});
+        }
+
 
         res.send({updatedDetails});
         
@@ -602,6 +611,36 @@ userRoutes.put("/my-event/:eventId", async (req: CustomRequest, res: CustomRespo
        res.send({
         updatedEvent
        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+userRoutes.put("/password", async (req: CustomRequest, res: CustomResponse, next: NextFunction) => {
+    try {
+        
+        const {
+            password, confirmPassword
+        } = req.body;
+
+        if(password != confirmPassword) {
+            res.status(400).send({
+                message: "Passwords do not mathch"
+            });
+            return;
+        }
+
+        const hashedPassword = hashPassword(password);
+
+        await userCollection.findByIdAndUpdate(req.userDetails?.userId, {
+            password: hashedPassword
+        });
+
+        res.send({
+            message: "Password updated successfully"
+        });
 
     } catch (error) {
         next(error);
