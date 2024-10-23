@@ -584,26 +584,34 @@ userRoutes.put("/my-event/:eventId", async (req: CustomRequest, res: CustomRespo
 
        const eventOrganizerDetails = await userCollection.findById(req.userDetails?.userId);
 
-        const usersInterested = await userCollection.find({
-            tags: {"$in": updatedEvent?.tags},
-            role: "user",
-            state: eventOrganizerDetails?.state,
-            cityOrLGA: eventOrganizerDetails?.cityOrLGA,
-            country: eventOrganizerDetails?.country
-        }).select("email");
+        // const usersInterested = await userCollection.find({
+        //     tags: {"$in": updatedEvent?.tags},
+        //     role: "user",
+        //     state: eventOrganizerDetails?.state,
+        //     cityOrLGA: eventOrganizerDetails?.cityOrLGA,
+        //     country: eventOrganizerDetails?.country
+        // }).select("email");
 
-        const usersInterestedEmail = usersInterested.map(u => u.email);
+        const usersInterested = await eventTicketsBoughtCollection.find({
+            eventId: updatedEvent?._id
+        });
+
+        const usersInterestedEmail = usersInterested.map(u => u.boughtFor);
 
         await sendEmail({
             to: usersInterestedEmail,
             subject: `e-Terested [Updated Event] - ${updatedEvent?.title}`,
             body: `
-                <div>Here is an event you may be interested in:</div>
+            <div>
+                <div>Here is an update to ${updatedEvent?.title} event:</div>
                 <div>${updatedEvent?.title}</div>
-                <img src="${updatedEvent?.eventFlyer}">
+                ${updatedEvent?.eventFlyer && (`
+                    <img src="${updatedEvent?.eventFlyer}">
+                `)}
                 <div>${updatedEvent?.description}</div>
                 <div>Venue: ${updatedEvent?.venue}</div>
                 <div>Date and time: ${moment(updatedEvent?.dateAndTime).format("LLLL")}</div>
+            </div>
             `
         });
 
